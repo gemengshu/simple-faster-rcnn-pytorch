@@ -66,7 +66,10 @@ class FasterRCNNVGG16(FasterRCNN):
             ratios=ratios,
             anchor_scales=anchor_scales,
             feat_stride=self.feat_stride,
-            proposal_creator_params={'min_size': anchor_scales[0] * 8}
+            proposal_creator_params={
+                'n_test_post_nms': 400,
+                'min_size': anchor_scales[0] * 8
+            }
         )
 
         head = VGG16RoIHead(

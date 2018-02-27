@@ -127,7 +127,7 @@ def train(**kwargs):
         if eval_result['map'] > best_map or epoch == 0:
             best_map = eval_result['map']
             best_path = trainer.save(best_map=best_map)
-        if epoch == 9:
+        if epoch == 5:
             trainer.load(best_path)
             trainer.faster_rcnn.scale_lr(opt.lr_decay)
             lr_ = lr_ * opt.lr_decay
@@ -137,7 +137,7 @@ def train(**kwargs):
                                                   str(eval_result['map']),
                                                   str(trainer.get_meter_data()))
         trainer.vis.log(log_info)
-        if epoch == 13:
+        if epoch == 9:
             break
 
 

@@ -31,6 +31,9 @@ class Config:
     num_workers = 4
     test_num_workers = 2
 
+    pos_iou_thresh = 0.5
+    nms_thresh = 0.3
+
     # sigma for l1_smooth_loss
     rpn_sigma = 3.
     roi_sigma = 1.
@@ -63,8 +66,8 @@ class Config:
 
     test_num = 1000
     # model
-    # load_path = 'checkpoints/fasterrcnn_02271238_0.5720081376730721'
-    load_path = None
+    load_path = 'checkpoints/fasterrcnn_02271847_0.906304656967986'
+    # load_path = None
 
     caffe_pretrain = False # use caffe pretrained model instead of torchvision
     caffe_pretrain_path = 'checkpoints/vgg16-caffe.pth'

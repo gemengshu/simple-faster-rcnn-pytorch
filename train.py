@@ -68,9 +68,16 @@ def train(**kwargs):
                                        shuffle=True,
                                        pin_memory=True
                                        )
-    faster_rcnn = FasterRCNNVGG16()
+    if opt.data == 'voc':
+        data_config = opt.voc_config
+    elif opt.data == 'atom':
+        data_config = opt.atom_config
+    else:
+        raise ValueError('Unknown data type: {}'.format(opt.data))
+
+    faster_rcnn = FasterRCNNVGG16(**data_config)
     print('model construct completed')
-    trainer = FasterRCNNTrainer(faster_rcnn).cuda()
+    trainer = FasterRCNNTrainer(faster_rcnn, n_fg_classes=data_config['n_fg_class']).cuda()
     if opt.load_path:
         trainer.load(opt.load_path)
         print('load pretrained model from %s' % opt.load_path)

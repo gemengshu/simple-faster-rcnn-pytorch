@@ -38,7 +38,7 @@ class FasterRCNNTrainer(nn.Module):
             A Faster R-CNN model that is going to be trained.
     """
 
-    def __init__(self, faster_rcnn):
+    def __init__(self, faster_rcnn, n_fg_classes):
         super(FasterRCNNTrainer, self).__init__()
 
         self.faster_rcnn = faster_rcnn
@@ -58,7 +58,7 @@ class FasterRCNNTrainer(nn.Module):
 
         # indicators for training status
         self.rpn_cm = ConfusionMeter(2)
-        self.roi_cm = ConfusionMeter(21)
+        self.roi_cm = ConfusionMeter(n_fg_classes + 1)
         self.meters = {k: AverageValueMeter() for k in LossTuple._fields}  # average loss
 
     def forward(self, imgs, bboxes, labels, scale):

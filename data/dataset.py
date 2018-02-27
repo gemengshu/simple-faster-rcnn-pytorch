@@ -1,11 +1,19 @@
 import torch as t
 from torch.utils.data import Dataset as Dataset_
-from .voc_dataset import VOCBboxDataset
 from skimage import transform as sktsf
 from torchvision import transforms as tvtsf
 from . import util
 import numpy as np
 from utils.config import opt
+
+
+data_type = opt.data
+if data_type == 'voc':
+    from .voc_dataset import VOCBboxDataset as RealDataset
+    data_config = opt.voc_config
+elif data_type == 'atom':
+    from .atom_dataset import AtomDataset as RealDataset
+    data_config = opt.atom_config
 
 
 def inverse_normalize(img):
@@ -99,8 +107,8 @@ class Transform(object):
 class Dataset(Dataset_):
     def __init__(self, opt):
         self.opt = opt
-        self.db = VOCBboxDataset(opt.voc_data_dir)
-        self.tsf = Transform(opt.min_size, opt.max_size)
+        self.db = RealDataset(data_config['data_dir'])
+        self.tsf = Transform(data_config['min_size'], data_config['max_size'])
 
     def __getitem__(self, idx):
         ori_img, bbox, label, difficult = self.db.get_example(idx)
@@ -117,7 +125,7 @@ class Dataset(Dataset_):
 class TestDataset(Dataset_):
     def __init__(self, opt, split='test', use_difficult=True):
         self.opt = opt
-        self.db = VOCBboxDataset(opt.voc_data_dir, split=split, use_difficult=use_difficult)
+        self.db = RealDataset(data_config['data_dir'], split=split, use_difficult=use_difficult)
 
     def __getitem__(self, idx):
         ori_img, bbox, label, difficult = self.db.get_example(idx)

@@ -56,8 +56,8 @@ class FasterRCNNVGG16(FasterRCNN):
     def __init__(self,
                  n_fg_class=20,
                  ratios=[0.5, 1, 2],
-                 anchor_scales=[8, 16, 32]
-                 ):
+                 anchor_scales=[8, 16, 32],
+                 **kwargs):
                  
         extractor, classifier = decom_vgg16()
 
@@ -66,6 +66,7 @@ class FasterRCNNVGG16(FasterRCNN):
             ratios=ratios,
             anchor_scales=anchor_scales,
             feat_stride=self.feat_stride,
+            proposal_creator_params={'min_size': anchor_scales[0] * 8}
         )
 
         head = VGG16RoIHead(

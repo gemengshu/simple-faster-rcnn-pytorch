@@ -6,10 +6,28 @@ from pprint import pprint
 # e.g. --voc-data-dir='./data/'
 
 class Config:
-    # data
-    voc_data_dir = '/data/VOC/VOCdevkit/VOC2007'
-    min_size = 600  # image resize
-    max_size = 1000 # image resize
+    # voc data
+    voc_config = {
+        'data_dir': '/data/VOC/VOCdevkit/VOC2007',
+        'min_size': 600,
+        'max_size': 1000,
+
+        'n_fg_class': 20,
+        'ratios': [0.5, 1, 2],
+        'anchor_scales': [8, 16, 32],
+    }
+
+    # atom data
+    atom_config = {
+        'data_dir': '/data/TrainingLib-master/atomsegmentation_bupt_new',
+        'min_size': 600,
+        'max_size': 1000,
+
+        'n_fg_class': 1,
+        'ratios': [1,],
+        'anchor_scales': [0.5, 1, 2, 4],
+    }
+
     num_workers = 4
     test_num_workers = 2
 
@@ -30,7 +48,7 @@ class Config:
     plot_every = 40  # vis every N iter
 
     # preset
-    data = 'voc'
+    data = 'atom'
     pretrained_model = 'vgg16'
 
     # training
@@ -45,7 +63,8 @@ class Config:
 
     test_num = 1000
     # model
-    load_path = 'checkpoints/fasterrcnn_02271238_0.5720081376730721'
+    # load_path = 'checkpoints/fasterrcnn_02271238_0.5720081376730721'
+    load_path = None
 
     caffe_pretrain = False # use caffe pretrained model instead of torchvision
     caffe_pretrain_path = 'checkpoints/vgg16-caffe.pth'

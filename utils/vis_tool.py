@@ -13,7 +13,7 @@ from matplotlib import pyplot as plot
 
 
 VOC_BBOX_LABEL_NAMES = (
-    'fly',
+    'f',
     'bike',
     'bird',
     'boat',

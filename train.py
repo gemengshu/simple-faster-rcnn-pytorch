@@ -7,12 +7,14 @@ from tqdm import tqdm
 from utils.config import opt
 from data.dataset import Dataset, TestDataset, inverse_normalize
 from model import FasterRCNNVGG16
+import torch
 from torch.autograd import Variable
 from torch.utils import data as data_
 from trainer import FasterRCNNTrainer
 from utils import array_tool as at
 from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
+from utils.dataloader import sDataLoader
 
 # fix for ulimit
 # https://github.com/pytorch/pytorch/issues/973#issuecomment-346405667
@@ -27,16 +29,20 @@ matplotlib.use('agg')
 def eval(dataloader, faster_rcnn, test_num=10000):
     pred_bboxes, pred_labels, pred_scores = list(), list(), list()
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
-    for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
-        sizes = [sizes[0][0], sizes[1][0]]
-        pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
-        gt_bboxes += list(gt_bboxes_.numpy())
-        gt_labels += list(gt_labels_.numpy())
-        gt_difficults += list(gt_difficults_.numpy())
-        pred_bboxes += pred_bboxes_
-        pred_labels += pred_labels_
-        pred_scores += pred_scores_
-        if ii == test_num: break
+    with tqdm(enumerate(dataloader), desc='eval') as loader:
+        for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in loader:
+            sizes = [sizes[0][0], sizes[1][0]]
+            pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
+            gt_bboxes += list(gt_bboxes_.numpy())
+            gt_labels += list(gt_labels_.numpy())
+            gt_difficults += list(gt_difficults_.numpy())
+
+            pred_bboxes += pred_bboxes_
+            pred_labels += pred_labels_
+            pred_scores += pred_scores_
+
+            if ii >= test_num:
+                break
 
     result = eval_detection_voc(
         pred_bboxes, pred_labels, pred_scores,
@@ -50,16 +56,16 @@ def train(**kwargs):
 
     dataset = Dataset(opt)
     print('load data')
-    dataloader = data_.DataLoader(dataset, \
-                                  batch_size=1, \
-                                  shuffle=True, \
+    dataloader = data_.DataLoader(dataset,
+                                  batch_size=1,
+                                  shuffle=True,
                                   # pin_memory=True,
                                   num_workers=opt.num_workers)
     testset = TestDataset(opt)
     test_dataloader = data_.DataLoader(testset,
                                        batch_size=1,
                                        num_workers=opt.test_num_workers,
-                                       shuffle=False, \
+                                       shuffle=True,
                                        pin_memory=True
                                        )
     faster_rcnn = FasterRCNNVGG16()
@@ -74,7 +80,7 @@ def train(**kwargs):
     lr_ = opt.lr
     for epoch in range(opt.epoch):
         trainer.reset_meters()
-        for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
+        for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader), desc='train', total=len(dataset)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
             img, bbox, label = Variable(img), Variable(bbox), Variable(label)
@@ -95,7 +101,8 @@ def train(**kwargs):
                 trainer.vis.img('gt_img', gt_img)
 
                 # plot predicti bboxes
-                _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
+                with torch.no_grad():
+                    _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
                 pred_img = visdom_bbox(ori_img_,
                                        at.tonumpy(_bboxes[0]),
                                        at.tonumpy(_labels[0]).reshape(-1),
@@ -106,9 +113,11 @@ def train(**kwargs):
                 trainer.vis.text(str(trainer.rpn_cm.value().tolist()), win='rpn_cm')
                 # roi confusion matrix
                 trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
-        eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num)
+        with torch.no_grad():
+            eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num)
+            print(eval_result)
 
-        if eval_result['map'] > best_map:
+        if eval_result['map'] > best_map or epoch == 0:
             best_map = eval_result['map']
             best_path = trainer.save(best_map=best_map)
         if epoch == 9:
@@ -121,7 +130,7 @@ def train(**kwargs):
                                                   str(eval_result['map']),
                                                   str(trainer.get_meter_data()))
         trainer.vis.log(log_info)
-        if epoch == 13: 
+        if epoch == 13:
             break
 
 

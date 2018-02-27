@@ -3,7 +3,8 @@ import time
 import numpy as np
 import matplotlib
 import torch as t
-import visdom
+# from visdom import Visdom
+from .vis_async import AsyncVisdom as Visdom
 
 matplotlib.use('Agg')
 from matplotlib import pyplot as plot
@@ -175,7 +176,7 @@ class Visualizer(object):
     """
 
     def __init__(self, env='default', **kwargs):
-        self.vis = visdom.Visdom(env=env, **kwargs)
+        self.vis = Visdom(env=env, **kwargs)
         self._vis_kw = kwargs
 
         # e.g.（’loss',23） the 23th value of loss
@@ -186,7 +187,7 @@ class Visualizer(object):
         """
         change the config of visdom
         """
-        self.vis = visdom.Visdom(env=env, **kwargs)
+        self.vis = Visdom(env=env, **kwargs)
         return self
 
     def plot_many(self, d):
@@ -250,7 +251,7 @@ class Visualizer(object):
         }
 
     def load_state_dict(self, d):
-        self.vis = visdom.Visdom(env=d.get('env', self.vis.env), **(self.d.get('vis_kw')))
+        self.vis = Visdom(env=d.get('env', self.vis.env), **(self.d.get('vis_kw')))
         self.log_text = d.get('log_text', '')
         self.index = d.get('index', dict())
         return self

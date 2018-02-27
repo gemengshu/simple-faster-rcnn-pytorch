@@ -62,9 +62,9 @@ class FasterRCNN(nn.Module):
     """
 
     def __init__(self, extractor, rpn, head,
-                loc_normalize_mean = (0., 0., 0., 0.),
-                loc_normalize_std = (0.1, 0.1, 0.2, 0.2)
-    ):
+                 loc_normalize_mean=(0., 0., 0., 0.),
+                 loc_normalize_std=(0.1, 0.1, 0.2, 0.2)
+                 ):
         super(FasterRCNN, self).__init__()
         self.extractor = extractor
         self.rpn = rpn
@@ -176,7 +176,7 @@ class FasterRCNN(nn.Module):
         score = np.concatenate(score, axis=0).astype(np.float32)
         return bbox, label, score
 
-    def predict(self, imgs,sizes=None,visualize=False):
+    def predict(self, imgs, sizes=None, visualize=False):
         """Detect objects from images.
 
         This method predicts objects for each image.
@@ -215,12 +215,12 @@ class FasterRCNN(nn.Module):
                 prepared_imgs.append(img)
                 sizes.append(size)
         else:
-             prepared_imgs = imgs 
+            prepared_imgs = imgs
         bboxes = list()
         labels = list()
         scores = list()
         for img, size in zip(prepared_imgs, sizes):
-            img = t.autograd.Variable(at.totensor(img).float()[None], volatile=True)
+            img = t.autograd.Variable(at.totensor(img).float()[None])
             scale = img.shape[3] / size[1]
             roi_cls_loc, roi_scores, rois, _ = self(img, scale=scale)
             # We are assuming that batch size is 1.
@@ -283,7 +283,3 @@ class FasterRCNN(nn.Module):
         for param_group in self.optimizer.param_groups:
             param_group['lr'] *= decay
         return self.optimizer
-
-
-
-

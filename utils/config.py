@@ -7,11 +7,11 @@ from pprint import pprint
 
 class Config:
     # data
-    voc_data_dir = '/home/cy/.chainer/dataset/pfnet/chainercv/voc/VOCdevkit/VOC2007/'
+    voc_data_dir = '/data/VOC/VOCdevkit/VOC2007'
     min_size = 600  # image resize
     max_size = 1000 # image resize
-    num_workers = 8
-    test_num_workers = 8
+    num_workers = 4
+    test_num_workers = 2
 
     # sigma for l1_smooth_loss
     rpn_sigma = 3.
@@ -43,9 +43,9 @@ class Config:
     # debug
     debug_file = '/tmp/debugf'
 
-    test_num = 10000
+    test_num = 1000
     # model
-    load_path = None
+    load_path = 'checkpoints/fasterrcnn_02271238_0.5720081376730721'
 
     caffe_pretrain = False # use caffe pretrained model instead of torchvision
     caffe_pretrain_path = 'checkpoints/vgg16-caffe.pth'

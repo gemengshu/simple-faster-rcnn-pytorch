@@ -1,4 +1,5 @@
 import torch as t
+from torch.utils.data import Dataset as Dataset_
 from .voc_dataset import VOCBboxDataset
 from skimage import transform as sktsf
 from torchvision import transforms as tvtsf
@@ -95,7 +96,7 @@ class Transform(object):
         return img, bbox, label, scale
 
 
-class Dataset:
+class Dataset(Dataset_):
     def __init__(self, opt):
         self.opt = opt
         self.db = VOCBboxDataset(opt.voc_data_dir)
@@ -113,7 +114,7 @@ class Dataset:
         return len(self.db)
 
 
-class TestDataset:
+class TestDataset(Dataset_):
     def __init__(self, opt, split='test', use_difficult=True):
         self.opt = opt
         self.db = VOCBboxDataset(opt.voc_data_dir, split=split, use_difficult=use_difficult)
